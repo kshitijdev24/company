@@ -1,8 +1,9 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router'; // Changed to react-router (standard)
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router';
+import axios from 'axios';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
-import { Briefcase, Users, Zap, Heart, TrendingUp, Globe, Coffee, Rocket } from 'lucide-react';
+import { Briefcase, Users, Zap, Heart, TrendingUp, Globe, Coffee, Rocket, X } from 'lucide-react';
 
 const openRoles = [
   {
@@ -102,6 +103,51 @@ const values = [
 ];
 
 const Careers = () => {
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [formData, setFormData] = useState({ name: '', email: '', experience: '', coverLetter: '', githubLink: '', portfolioLink: '' });
+  const [resumeFile, setResumeFile] = useState(null);
+  const [status, setStatus] = useState({ loading: false, error: null, success: false });
+
+  const handleApplyClick = (roleTitle) => {
+    setSelectedRole(roleTitle);
+    setStatus({ loading: false, error: null, success: false });
+  };
+
+  const handleModalClose = () => {
+    setSelectedRole(null);
+  };
+
+  const handleApplicationSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, error: null, success: false });
+    
+    const data = new FormData();
+    data.append('name', formData.name);
+    data.append('email', formData.email);
+    data.append('experience', formData.experience);
+    data.append('coverLetter', formData.coverLetter);
+    data.append('githubLink', formData.githubLink);
+    data.append('portfolioLink', formData.portfolioLink);
+    data.append('role', selectedRole);
+    if (resumeFile) {
+      data.append('resume', resumeFile);
+    }
+
+    try {
+      await axios.post('http://localhost:3000/api/careers/apply', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setStatus({ loading: false, error: null, success: true });
+      setTimeout(() => {
+          setSelectedRole(null);
+          setFormData({ name: '', email: '', experience: '', coverLetter: '', githubLink: '', portfolioLink: '' });
+          setResumeFile(null);
+      }, 2000);
+    } catch (err) {
+      setStatus({ loading: false, error: 'Failed to submit application. Please try again.', success: false });
+    }
+  };
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -253,12 +299,12 @@ const Careers = () => {
                       </span>
                     </div>
                   </div>
-                  <Link
-                    to="/contact"
+                  <button
+                    onClick={() => handleApplyClick(role.title)}
                     className="px-6 py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white rounded-full hover:shadow-lg transition-all text-center"
                   >
                     Apply Now
-                  </Link>
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -341,6 +387,124 @@ const Careers = () => {
           </motion.div>
         </div>
       </section>
+      {/* Application Modal */}
+      <AnimatePresence>
+        {selectedRole && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl p-6 md:p-8 max-w-lg w-full relative z-[101] my-8"
+            >
+              <button
+                onClick={handleModalClose}
+                className="absolute top-4 right-4 p-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              <h3 className="text-2xl font-bold mb-2">Apply for {selectedRole}</h3>
+              <p className="text-gray-600 mb-6">Fill out the form below and we'll get back to you shortly.</p>
+
+              {status.success ? (
+                <div className="p-6 bg-teal-50 border border-teal-200 rounded-xl text-center">
+                  <div className="w-16 h-16 bg-teal-100 text-teal-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Zap size={32} />
+                  </div>
+                  <h4 className="text-lg font-bold text-teal-900 mb-2">Application Received!</h4>
+                  <p className="text-teal-700">Thank you for applying. We are reviewing your application.</p>
+                </div>
+              ) : (
+                <form onSubmit={handleApplicationSubmit} className="space-y-4">
+                  {status.error && <div className="p-3 bg-red-50 text-red-600 rounded-lg text-sm">{status.error}</div>}
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Full Name *</label>
+                      <input
+                        type="text" required
+                        value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Email Address *</label>
+                      <input
+                        type="email" required
+                        value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">GitHub Profile</label>
+                      <input
+                        type="url"
+                        value={formData.githubLink} onChange={e => setFormData({...formData, githubLink: e.target.value})}
+                        placeholder="https://github.com/..."
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Live Portfolio / Projects</label>
+                      <input
+                        type="url"
+                        value={formData.portfolioLink} onChange={e => setFormData({...formData, portfolioLink: e.target.value})}
+                        placeholder="https://my-portfolio.com"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Years of Experience *</label>
+                      <input
+                        type="text" required
+                        value={formData.experience} onChange={e => setFormData({...formData, experience: e.target.value})}
+                        placeholder="e.g. 5 years"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-semibold mb-1">Upload Resume/CV</label>
+                      <input
+                        type="file"
+                        accept=".pdf,.doc,.docx"
+                        onChange={e => setResumeFile(e.target.files[0])}
+                        className="w-full px-4 py-1.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 file:mr-4 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Cover Letter / Note</label>
+                    <textarea
+                      rows={3}
+                      value={formData.coverLetter} onChange={e => setFormData({...formData, coverLetter: e.target.value})}
+                      placeholder="Why are you a good fit?"
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 resize-none"
+                    ></textarea>
+                  </div>
+                  
+                  <button
+                    type="submit" disabled={status.loading}
+                    className="w-full py-3 bg-gradient-to-r from-teal-600 to-cyan-600 text-white font-bold rounded-lg hover:shadow-lg disabled:opacity-75 transition-all"
+                  >
+                    {status.loading ? 'Submitting...' : 'Submit Application'}
+                  </button>
+                </form>
+              )}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

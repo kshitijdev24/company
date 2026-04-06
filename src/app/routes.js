@@ -10,6 +10,8 @@ import Blog from "./pages/Blog";
 import Careers from "./pages/Careers";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 export const router = createBrowserRouter([
   {
@@ -25,6 +27,8 @@ export const router = createBrowserRouter([
       { path: "blog", Component: Blog },
       { path: "careers", Component: Careers },
       { path: "contact", Component: Contact },
+      { path: "login", Component: Login },
+      { path: "register", Component: Register },
       { path: "*", Component: NotFound },
     ],
   },

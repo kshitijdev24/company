@@ -1,7 +1,8 @@
-import { Link, useLocation } from 'react-router';
+import { Link, useLocation, useNavigate } from 'react-router';
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../context/AuthContext';
 
 const navLinks = [
   { path: '/', label: 'Home' },
@@ -19,6 +20,13 @@ export function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,12 +77,32 @@ export function Navigation() {
 
           {/* CTA Button */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Link
-              to="/contact"
-              className="px-6 py-2.5 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg hover:shadow-lg transition-all"
-            >
-              Join Waitlist
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-gray-700 font-medium">Hi, {user.name}</span>
+                <button
+                  onClick={handleLogout}
+                  className="px-6 py-2.5 bg-red-50 text-red-600 rounded-lg font-medium hover:bg-red-100 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link
+                  to="/login"
+                  className="px-6 py-2.5 font-medium text-gray-700 hover:text-teal-600 transition-colors"
+                >
+                  Log in
+                </Link>
+                <Link
+                  to="/register"
+                  className="px-6 py-2.5 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg hover:shadow-lg transition-all"
+                >
+                  Sign up
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -110,12 +138,39 @@ export function Navigation() {
                   {link.label}
                 </Link>
               ))}
-              <Link
-                to="/contact"
-                className="block px-4 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg text-center"
-              >
-                Join Waitlist
-              </Link>
+              {user ? (
+                 <>
+                   <div className="block px-4 py-3 text-gray-700 font-medium">
+                     Hi, {user.name}
+                   </div>
+                   <button
+                     onClick={() => {
+                        handleLogout();
+                        setIsOpen(false);
+                     }}
+                     className="block w-full text-left px-4 py-3 text-red-600 font-medium hover:bg-red-50 rounded-lg transition-colors"
+                   >
+                     Logout
+                   </button>
+                 </>
+               ) : (
+                 <>
+                   <Link
+                     to="/login"
+                     onClick={() => setIsOpen(false)}
+                     className="block px-4 py-3 text-gray-700 text-center font-medium hover:bg-gray-50 rounded-lg transition-colors border max-w-full my-2 mx-auto"
+                   >
+                     Log in
+                   </Link>
+                   <Link
+                     to="/register"
+                     onClick={() => setIsOpen(false)}
+                     className="block px-4 py-3 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg text-center font-medium"
+                   >
+                     Sign up
+                   </Link>
+                 </>
+               )}
             </div>
           </motion.div>
         )}

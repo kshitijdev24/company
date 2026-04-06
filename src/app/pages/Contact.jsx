@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Briefcase, Users } from 'lucide-react';
 import { useState } from 'react';
+import axios from 'axios';
 
 const contactTypes = [
   { icon: MessageSquare, title: 'General Inquiry', value: 'general' },
@@ -16,11 +17,18 @@ export default function Contact() {
     type: 'general',
     message: '',
   });
+  const [status, setStatus] = useState({ loading: false, error: null, success: false });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle form submission
-    console.log('Form submitted:', formData);
+    setStatus({ loading: true, error: null, success: false });
+    try {
+      await axios.post('http://localhost:3000/api/contact', formData);
+      setStatus({ loading: false, error: null, success: true });
+      setFormData({ name: '', email: '', type: 'general', message: '' });
+    } catch (err) {
+      setStatus({ loading: false, error: 'Failed to send message. Please try again.', success: false });
+    }
   };
 
   return (
@@ -214,12 +222,16 @@ export default function Contact() {
                     />
                   </div>
 
+                  {status.error && <div className="text-red-500 text-sm p-3 bg-red-50 rounded-lg">{status.error}</div>}
+                  {status.success && <div className="text-teal-600 text-sm p-3 bg-teal-50 border border-teal-200 rounded-lg">Message sent successfully!</div>}
+                  
                   {/* Submit Button */}
                   <button
                     type="submit"
-                    className="w-full px-8 py-4 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
+                    disabled={status.loading}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-teal-500 to-orange-500 text-white rounded-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2 disabled:opacity-75"
                   >
-                    <span>Send Message</span>
+                    <span>{status.loading ? 'Sending...' : 'Send Message'}</span>
                     <Send size={20} />
                   </button>
                 </form>
