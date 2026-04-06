@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion'; // Standard import for motion
 import { Calendar, User, ArrowRight, TrendingUp } from 'lucide-react';
 
@@ -58,11 +58,74 @@ const blogPosts = [
     readTime: '9 min read',
     image: 'https://images.unsplash.com/photo-1770223914355-76a1f1c8f6fc?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb2xsZWdlJTIwc3R1ZGVudHMlMjBncmFkdWF0aW9uJTIwY2VsZWJyYXRpb258ZW58MXx8fHwxNzcyNjQ1ODYwfDA&ixlib=rb-4.1.0&q=80&w=1080',
   },
+  {
+    title: 'The Digital Nomad Trend: Blending Work and Travel in 2026',
+    excerpt: 'How remote work is shaping long-term travel habits and what destinations are adapting best to this shift.',
+    category: 'Trends',
+    author: 'Neha Gupta',
+    date: 'February 15, 2026',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXZlbG9wZXJ8ZW58MXx8fHwxNjg3MTk0OTEyfDA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    title: 'Mindful Journeys: Overcoming Post-Vacation Blues',
+    excerpt: 'A psychological perspective on transitioning back to daily life and keeping the vacation glow alive.',
+    category: 'Travel Psychology',
+    author: 'Dr. Sarah Mehta',
+    date: 'February 12, 2026',
+    readTime: '6 min read',
+    image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWFjaCUyMHJlbGF4fGVufDF8fHx8MTY4NzE5NDkxMnww&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    title: 'Tracing the Silk Route: India\'s Ancient Trade Networks',
+    excerpt: 'Explore the remnants of historical trade routes and their cultural impact on modern Indian heritage.',
+    category: 'Heritage',
+    author: 'Priya Singh',
+    date: 'February 10, 2026',
+    readTime: '11 min read',
+    image: 'https://images.unsplash.com/photo-1534430480872-3498386e7856?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0cmFkaXRpb25hbHxlbnwxfHx8fDE2ODcxOTQ5MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    title: 'Digital Detox Retreats: Disconnect to Reconnect',
+    excerpt: 'The rising popularity of tech-free wellness centers and their benefits for cognitive health.',
+    category: 'Wellness',
+    author: 'Dr. Arun Patel',
+    date: 'February 8, 2026',
+    readTime: '7 min read',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxyZWxheHxlbnwxfHx8fDE2ODcxOTQ5MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    title: 'Finding Yourself: The Solo Backpacker\'s Guide to Southeast Asia',
+    excerpt: 'An inspiring journey of self-discovery, resilience, and navigating unknown territories independently.',
+    category: 'Solo Travel',
+    author: 'Maya Desai',
+    date: 'February 5, 2026',
+    readTime: '9 min read',
+    image: 'https://images.unsplash.com/photo-1501555088652-021faa106b9b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb3VudGFpbnxlbnwxfHx8fDE2ODcxOTQ5MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  },
+  {
+    title: 'Semester at Sea: Enhancing Education Through Global Exposure',
+    excerpt: 'Why international travel programs are essential for modern students and how to fund them.',
+    category: 'Student Travel',
+    author: 'Vikram Sharma',
+    date: 'February 2, 2026',
+    readTime: '8 min read',
+    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50c3xlbnwxfHx8fDE2ODcxOTQ5MTJ8MA&ixlib=rb-4.1.0&q=80&w=1080',
+  }
 ];
 
 const categories = ['All', 'Travel Psychology', 'Trends', 'Heritage', 'Wellness', 'Solo Travel', 'Student Travel'];
 
 const Blog = () => {
+  const [activeCategory, setActiveCategory] = useState('All');
+
+  const filteredPosts = activeCategory === 'All'
+    ? blogPosts
+    : blogPosts.filter(post => post.category === activeCategory);
+
+  const featuredPost = activeCategory === 'All' ? blogPosts[0] : null;
+  const gridPosts = activeCategory === 'All' ? blogPosts.slice(1) : filteredPosts;
+
   return (
     <div className="min-h-screen pt-20">
       {/* Hero Section */}
@@ -94,10 +157,11 @@ const Blog = () => {
             {categories.map((category, index) => (
               <button
                 key={index}
+                onClick={() => setActiveCategory(category)}
                 className={`px-6 py-2 rounded-full transition-all ${
-                  category === 'All'
+                  activeCategory === category
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-violet-300'
                 }`}
               >
                 {category}
@@ -108,7 +172,7 @@ const Blog = () => {
       </section>
 
       {/* Featured Post */}
-      {blogPosts[0] && (
+      {featuredPost && (
         <section className="py-16 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center space-x-2 mb-8">
@@ -125,27 +189,27 @@ const Blog = () => {
             >
               <div className="h-96 md:h-auto">
                 <img
-                  src={blogPosts[0].image}
-                  alt={blogPosts[0].title}
+                  src={featuredPost.image}
+                  alt={featuredPost.title}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div className="p-8 flex flex-col justify-center">
                 <span className="inline-block px-4 py-1 bg-purple-600 text-white rounded-full text-sm mb-4 w-fit">
-                  {blogPosts[0].category}
+                  {featuredPost.category}
                 </span>
-                <h3 className="text-3xl font-bold mb-4">{blogPosts[0].title}</h3>
-                <p className="text-gray-600 mb-6">{blogPosts[0].excerpt}</p>
+                <h3 className="text-3xl font-bold mb-4">{featuredPost.title}</h3>
+                <p className="text-gray-600 mb-6">{featuredPost.excerpt}</p>
                 <div className="flex flex-wrap items-center gap-6 text-sm text-gray-500 mb-6">
                   <div className="flex items-center space-x-2">
                     <User size={16} />
-                    <span>{blogPosts[0].author}</span>
+                    <span>{featuredPost.author}</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Calendar size={16} />
-                    <span>{blogPosts[0].date}</span>
+                    <span>{featuredPost.date}</span>
                   </div>
-                  <span>{blogPosts[0].readTime}</span>
+                  <span>{featuredPost.readTime}</span>
                 </div>
                 <button className="inline-flex items-center px-6 py-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-all w-fit">
                   Read Article
@@ -160,10 +224,15 @@ const Blog = () => {
       {/* Blog Grid */}
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold mb-12">Latest Articles</h2>
+          <h2 className="text-3xl font-bold mb-12">
+            {activeCategory === 'All' ? 'Latest Articles' : `${activeCategory} Articles`}
+          </h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {blogPosts.slice(1).map((post, index) => (
+          {gridPosts.length === 0 ? (
+            <p className="text-gray-500 text-center py-10">No articles found in this category.</p>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {gridPosts.map((post, index) => (
               <motion.article
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
@@ -197,7 +266,8 @@ const Blog = () => {
                 </div>
               </motion.article>
             ))}
-          </div>
+            </div>
+          )}
         </div>
       </section>
 
